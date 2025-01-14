@@ -1,176 +1,79 @@
 package innocollection;
 
+import java.util.*;
 
+public class InnoArrayList<T> implements List<T> {
 
-public class InnoArrayList implements InnoList {
-
-    // максимальное количество элементов
     private static final int DEFAULT_CAPACITY = 10;
 
-    // массив для хранения элементов
-    private int[] elements = new int[DEFAULT_CAPACITY];
-
-    // количество элементов
+    private Object[] elements;
     private int count;
 
-    // конструктор класса InnoArrayList с заданным количеством элементов
-    // по умолчанию DEFAULT_CAPACITY
     public InnoArrayList() {
-        this.elements = new int[DEFAULT_CAPACITY];
+        this.elements = new Object[DEFAULT_CAPACITY];
         this.count = 0;
     }
 
     @Override
-    public void add(int element) {
-        // если список переполнен
+    public boolean add(T element) {
         if (count == elements.length) {
             resize();
         }
         elements[count++] = element;
+        return true;
     }
 
     private void resize() {
-        // создаем новый массив в полтора раза больше
-        int[] newElements = new int[elements.length + elements.length / 2];
-
-        // копируем все элементы из старого массива в новый
-        for (int i = 0; i < elements.length; i++) {
-            newElements[i] = elements[i];
-        }
-        // устанавливаем ссылку на новый массив в поле elements класса InnoArrayList списка
-        // и увеличиваем количество элементов в списке по 1 элементу
+        Object[] newElements = new Object[elements.length + elements.length / 2];
+        System.arraycopy(elements, 0, newElements, 0, elements.length);
         elements = newElements;
     }
 
     @Override
-    public void addAll(int[] elements) {
-
+    public T get(int index) {
+        checkIndex(index);
+        return (T) elements[index];
     }
 
     @Override
-    public void clear() {
-
+    public T remove(int index) {
+        checkIndex(index);
+        T removedElement = (T) elements[index];
+        System.arraycopy(elements, index + 1, elements, index, count - index - 1);
+        count--;
+        elements[count] = null;
+        return removedElement;
     }
 
-    @Override
-    public void isEmpty() {
-
-    }
-
-    // TODO: реализовать метод
-    @Override
-    public void remove(int element) {
-        int index = -1;
+    public boolean remove(Object element) {
         for (int i = 0; i < count; i++) {
-            if (elements[i] == element) {
-                index = i;
-                break;
+            if (Objects.equals(elements[i], element)) {
+                remove(i);
+                return true;
             }
         }
-        if (index != -1) {
-            for (int i = index; i < count - 1; i++) {
-                elements[i] = elements[i + 1];
-            }
-            count--;
-        }
-    }
-
-    public void sort() {
-        if (count > 1) {
-            quickSort(elements, 0, count - 1);
-        }
-        }
-
-    @Override
-    public boolean contains(int element) {
         return false;
     }
 
-    @Override
-    public int size() {
-        return 0;
-    }
-
-    // Метод быстрой сортировки (quick sort)
-    private void quickSort(int[] array, int low, int high) {
-        if (low < high) {
-            // Определяем индекс опорного элемента
-            int pivotIndex = partition(array, low, high);
-            // Рекурсивно сортируем левую и правую части
-            quickSort(array, low, pivotIndex - 1);
-            quickSort(array, pivotIndex + 1, high);
-    }
-    }
-
-    private int partition(int[] array, int low, int high) {
-        // Выбираем опорный элемент (pivot) — здесь берём последний элемент
-        int pivot = array[high];
-        int i = low - 1;
-        // Переставляем элементы массива так, чтобы меньшие оказались слева, а большие справа
-        for (int j = low; j < high; j++) {
-            if (array[j] < pivot) {
-                i++;
-                swap(array, i, j);
-            }
+    public void insert(int index, T element) {
+        checkIndex(index);
+        if (count == elements.length) {
+            resize();
         }
-        // Перемещаем опорный элемент на его правильное место
-        swap(array, i + 1, high);
-        return i + 1;  // Возвращаем индекс опорного элемента
-    }
-
-    private static void swap(int[] array, int i, int j) {
-        int temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-
-    /*
-    @Override
-    public void sort() {
-        if (count > 1) {
-            mergSort(elements, 0, count - 1);
-        }
-    }
-
-    private void mergSort(int[] elements, int left, int right) {
-        if (left < right) {
-            int middle = (left + right) / 2; // середина списка
-            mergSort(elements, left, middle); // сортировка левой половины списка
-            mergSort(elements, middle + 1, right); // сортировка правой половины списка
-            merge(elements, left, middle, right); // слияние сортированных списков в один список
-        }
-    }
-
-    private void merge(int[] elements, int left, int middle, int right) {
-        int leftSize = middle - left + 1; // размер левой половины списка
-        int rightSize = right - middle; // размер правой половины списка
-        int[] leftArray = new int[leftSize]; // левая половина списка
-        int[] rightArray = new int[rightSize]; // правая половина списка
-        for (int i = 0; i < leftArray.length; i++) {
-            leftArray[i] = elements[left + i]; // заполнение левой половины списка
-        }
-        for (int i = 0; i < rightArray.length; i++) {
-            rightArray[i] = elements[middle + 1 + i]; // заполнение правой половины списка
-        }
-        int i = 0, j = 0, k = left; // i - индекс левой половины списка, j - индекс правой половины списка и k - индекс слиянного списка
-        while (i < leftSize && j < rightSize) { // слияние сортированных списков в один список по возрастанию
-            if (leftArray[i] <= rightArray[j]) { // если элемент левой половины списка меньше или равен элементу правой половины списка
-                elements[k++] = leftArray[i++]; // добавляем элемент левой половины списка в слиянный список
-            } else {
-                elements[k++] = rightArray[j++]; // добавляем элемент правой половины списка в слиянный список
-            }
-        }
-        while (i < leftSize) { // добавление оставшихся элементов левой половины списка
-            elements[k++] = leftArray[i++]; // добавляем элемент левой половины списка в слиянный список
-        }
-        while (j < rightSize) { // добавление оставшихся элементов правой половины списка
-            elements[k++] = rightArray[j++]; // добавляем элемент правой половины списка в слиянный список
-        }
+        System.arraycopy(elements, index, elements, index + 1, count - index);
+        elements[index] = element;
+        count++;
     }
 
     @Override
-    public boolean contains(int element) {
-        return false;
+    public void sort(Comparator<? super T> comparator) {
+        Arrays.sort((T[]) elements, 0, count, comparator);
+    }
+
+    private void checkIndex(int index) {
+        if (index < 0 || index >= count) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + count);
+        }
     }
 
     @Override
@@ -179,25 +82,145 @@ public class InnoArrayList implements InnoList {
     }
 
     @Override
-    public int get(int index) {
-        if (index >= 0 && index < count) {
-            return elements[index];
-        } else {
-            return -1;
+    public boolean isEmpty() {
+        return count == 0;
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        for (int i = 0; i < count; i++) {
+            if (Objects.equals(elements[i], o)) {
+                return true;
+            }
         }
-
-    }
-
-     */
-
-    @Override
-    public int get(int index) {
-        return 0;
+        return false;
     }
 
     @Override
-    public void insert(int index, int element) {
-
+    public Object[] toArray() {
+        return Arrays.copyOf(elements, count);
     }
 
+    @Override
+    public <T1> T1[] toArray(T1[] a) {
+        if (a.length < count) {
+            return (T1[]) Arrays.copyOf(elements, count, a.getClass());
+        }
+        System.arraycopy(elements, 0, a, 0, count);
+        if (a.length > count) {
+            a[count] = null;
+        }
+        return a;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for (Object element : c) {
+            if (!contains(element)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        for (T element : c) {
+            add(element);
+        }
+        return !c.isEmpty();
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        boolean modified = false;
+        for (Object element : c) {
+            modified |= remove(element);
+        }
+        return modified;
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        Arrays.fill(elements, 0, count, null);
+        count = 0;
+    }
+
+    @Override
+    public T set(int index, T element) {
+        checkIndex(index);
+        T oldElement = (T) elements[index];
+        elements[index] = element;
+        return oldElement;
+    }
+
+    @Override
+    public void add(int index, T element) {
+        insert(index, element);
+    }
+
+    @Override
+    public int indexOf(Object o) {
+        for (int i = 0; i < count; i++) {
+            if (Objects.equals(elements[i], o)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public int lastIndexOf(Object o) {
+        for (int i = count - 1; i >= 0; i--) {
+            if (Objects.equals(elements[i], o)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public ListIterator<T> listIterator() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ListIterator<T> listIterator(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<>() {
+            private int currentIndex = 0;
+
+            @Override
+            public boolean hasNext() {
+                return currentIndex < count;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return (T) elements[currentIndex++];
+            }
+        };
+    }
 }

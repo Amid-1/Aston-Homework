@@ -65,14 +65,81 @@ public class InnoArrayList<T> implements List<T> {
         count++;
     }
 
-    @Override
-    public void sort(Comparator<? super T> comparator) {
-        Arrays.sort((T[]) elements, 0, count, comparator);
+    private void checkIndex(int index) {
+        if (index < 0 || index > count) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + count);
+        }
     }
 
-    private void checkIndex(int index) {
-        if (index < 0 || index >= count) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + count);
+    @Override
+    public void sort(Comparator<? super T> comparator) {
+        if (count > 1) {
+            mergeSort((T[]) elements, 0, count - 1, comparator);
+        }
+    }
+
+    private void mergeSort(T[] array, int left, int right, Comparator<? super T> comparator) {
+        if (left < right) {
+            int middle = (left + right) / 2;
+            mergeSort(array, left, middle, comparator); // Сортировка левой половины
+            mergeSort(array, middle + 1, right, comparator); // Сортировка правой половины
+            merge(array, left, middle, right, comparator); // Слияние
+        }
+    }
+
+    private void merge(T[] array, int left, int middle, int right, Comparator<? super T> comparator) {
+        int leftSize = middle - left + 1;
+        int rightSize = right - middle;
+
+        T[] leftArray = Arrays.copyOfRange(array, left, middle + 1);
+        T[] rightArray = Arrays.copyOfRange(array, middle + 1, right + 1);
+
+        int i = 0, j = 0, k = left;
+        while (i < leftSize && j < rightSize) {
+            if (comparator.compare(leftArray[i], rightArray[j]) <= 0) {
+                array[k++] = leftArray[i++];
+            } else {
+                array[k++] = rightArray[j++];
+            }
+        }
+
+        while (i < leftSize) {
+            array[k++] = leftArray[i++];
+        }
+
+        while (j < rightSize) {
+            array[k++] = rightArray[j++];
+        }
+    }
+
+    private void quickSort(T[] array, int low, int high, Comparator<? super T> comparator) {
+        if (low < high) {
+            int pivotIndex = partition(array, low, high, comparator);
+            quickSort(array, low, pivotIndex - 1, comparator);
+            quickSort(array, pivotIndex + 1, high, comparator);
+        }
+    }
+
+    private int partition(T[] array, int low, int high, Comparator<? super T> comparator) {
+        T pivot = array[high];
+        int i = low - 1;
+        for (int j = low; j < high; j++) {
+            if (comparator.compare(array[j], pivot) <= 0) {
+                i++;
+                T temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+        }
+        T temp = array[i + 1];
+        array[i + 1] = array[high];
+        array[high] = temp;
+        return i + 1;
+    }
+
+    public void sortUsingQuickSort(Comparator<? super T> comparator) {
+        if (count > 1) {
+            quickSort((T[]) elements, 0, count - 1, comparator);
         }
     }
 
